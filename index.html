@@ -1,0 +1,1419 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firebase Davomat Tizimi</title>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    
+    <style>
+        :root {
+            --primary: #4361ee;
+            --primary-light: #4895ef;
+            --secondary: #3f37c9;
+            --success: #4cc9f0;
+            --warning: #f72585;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --gray: #6c757d;
+            --border-radius: 12px;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: var(--dark);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            max-width: 1000px;
+            width: 100%;
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            color: white;
+            padding: 25px 30px;
+            text-align: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+
+        .logo i {
+            font-size: 2.5rem;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        .auth-section {
+            padding: 30px;
+        }
+
+        .auth-section.active {
+            display: block;
+        }
+
+        .auth-form {
+            max-width: 400px;
+            margin: 0 auto;
+            background-color: #f8f9fa;
+            padding: 30px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+        }
+
+        .auth-title {
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            color: var(--secondary);
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #dee2e6;
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 25px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            width: 100%;
+            text-align: center;
+        }
+
+        .btn:hover {
+            background-color: var(--secondary);
+            transform: translateY(-2px);
+        }
+
+        .auth-switch {
+            text-align: center;
+            margin-top: 20px;
+            color: var(--gray);
+        }
+
+        .auth-switch a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .auth-switch a:hover {
+            text-decoration: underline;
+        }
+
+        .app-section {
+            display: none;
+        }
+
+        .app-section.active {
+            display: block;
+        }
+
+        .user-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 30px;
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .user-details {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        .user-name {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .user-role {
+            background-color: var(--primary-light);
+            color: white;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+        }
+
+        .logout-btn {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition);
+        }
+
+        .logout-btn:hover {
+            background-color: #c82333;
+        }
+
+        .month-selector {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 30px;
+            background-color: white;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .month-nav {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .month-btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .month-btn:hover {
+            background-color: var(--secondary);
+            transform: scale(1.1);
+        }
+
+        .month-display {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--dark);
+            text-align: center;
+            flex-grow: 1;
+        }
+
+        .year-display {
+            font-size: 1.2rem;
+            color: var(--gray);
+            margin-top: 5px;
+        }
+
+        .main-content {
+            padding: 30px;
+        }
+
+        .status-card {
+            background: linear-gradient(to right, #e3f2fd, #f3e5f5);
+            border-radius: var(--border-radius);
+            padding: 25px;
+            margin-bottom: 30px;
+            border-left: 5px solid var(--primary);
+        }
+
+        .status-title {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: var(--secondary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .current-profile {
+            display: inline-block;
+            background-color: var(--primary);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin-left: 10px;
+        }
+
+        .status-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .status-btn {
+            flex: 1;
+            min-width: 120px;
+            padding: 15px;
+            border: none;
+            border-radius: var(--border-radius);
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .present-btn {
+            background-color: #d4edda;
+            color: #155724;
+            border: 2px solid #c3e6cb;
+        }
+
+        .present-btn:hover {
+            background-color: #c3e6cb;
+            transform: translateY(-3px);
+        }
+
+        .absent-btn {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 2px solid #f5c6cb;
+        }
+
+        .absent-btn:hover {
+            background-color: #f5c6cb;
+            transform: translateY(-3px);
+        }
+
+        .late-option {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #fff3cd;
+            border-radius: var(--border-radius);
+            border-left: 4px solid #ffc107;
+        }
+
+        .late-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            color: #856404;
+            cursor: pointer;
+        }
+
+        .late-checkbox input {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .calendar-section {
+            margin-top: 40px;
+        }
+
+        .calendar-title {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: var(--secondary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .calendar {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 10px;
+        }
+
+        .day-header {
+            background-color: var(--primary-light);
+            color: white;
+            padding: 12px 5px;
+            text-align: center;
+            border-radius: 8px;
+            font-weight: 600;
+        }
+
+        .day {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px 5px;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+            position: relative;
+            min-height: 85px;
+        }
+
+        .day:hover {
+            background-color: #e9ecef;
+            transform: translateY(-3px);
+        }
+
+        .day.present {
+            background-color: #d4edda;
+            color: #155724;
+            font-weight: 600;
+        }
+
+        .day.absent {
+            background-color: #f8d7da;
+            color: #721c24;
+            font-weight: 600;
+        }
+
+        .day.late {
+            position: relative;
+        }
+
+        .day.late::after {
+            content: "⏰";
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            font-size: 0.8rem;
+        }
+
+        .day.today {
+            border: 2px solid var(--primary);
+            box-shadow: 0 0 0 2px rgba(67, 97, 238, 0.2);
+        }
+
+        .day.future {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        .day.future:hover {
+            transform: none;
+            background-color: #f8f9fa;
+        }
+
+        .day.empty {
+            background-color: transparent;
+            cursor: default;
+        }
+
+        .day.empty:hover {
+            transform: none;
+            background-color: transparent;
+        }
+
+        .day-number {
+            font-size: 1.2rem;
+            margin-bottom: 5px;
+        }
+
+        .day-status {
+            font-size: 0.8rem;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+
+        .day-user {
+            font-size: 0.7rem;
+            padding: 2px 5px;
+            border-radius: 3px;
+            display: inline-block;
+            margin-top: 2px;
+        }
+
+        .user-me {
+            background-color: rgba(67, 97, 238, 0.1);
+            color: var(--primary);
+        }
+
+        .user-teacher {
+            background-color: rgba(247, 37, 133, 0.1);
+            color: var(--warning);
+        }
+
+        .statistics {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: var(--border-radius);
+        }
+
+        .stat-box {
+            text-align: center;
+            flex: 1;
+            padding: 15px;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--gray);
+            margin-top: 5px;
+        }
+
+        .monthly-stats {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #e9ecef;
+            border-radius: var(--border-radius);
+        }
+
+        .monthly-stats-title {
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: var(--secondary);
+        }
+
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: var(--border-radius);
+            background-color: var(--primary);
+            color: white;
+            box-shadow: var(--shadow);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: var(--transition);
+            z-index: 1000;
+        }
+
+        .notification.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .notification.error {
+            background-color: #dc3545;
+        }
+
+        .notification.success {
+            background-color: #28a745;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+            }
+            
+            .status-options {
+                flex-direction: column;
+            }
+            
+            .calendar {
+                grid-template-columns: repeat(7, 1fr);
+                gap: 5px;
+            }
+            
+            .day {
+                padding: 10px 2px;
+                font-size: 0.9rem;
+                min-height: 70px;
+            }
+            
+            .statistics {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            header {
+                padding: 20px 15px;
+            }
+            
+            .main-content {
+                padding: 20px 15px;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .day {
+                min-height: 60px;
+                padding: 8px 1px;
+            }
+            
+            .day-number {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Kirish/Ro'yxatdan o'tish bo'limi -->
+        <div class="auth-section active" id="authSection">
+            <div class="auth-form" id="loginForm">
+                <h2 class="auth-title">Tizimga Kirish</h2>
+                <div class="form-group">
+                    <label for="loginEmail">Email</label>
+                    <input type="email" id="loginEmail" class="form-control" placeholder="email@example.com">
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Parol</label>
+                    <input type="password" id="loginPassword" class="form-control" placeholder="Parolingiz">
+                </div>
+                <button class="btn" id="loginBtn">Kirish</button>
+                <div class="auth-switch">
+                    Hisobingiz yo'qmi? <a id="showRegister">Ro'yxatdan o'ting</a>
+                </div>
+            </div>
+
+            <div class="auth-form" id="registerForm" style="display: none;">
+                <h2 class="auth-title">Ro'yxatdan o'tish</h2>
+                <div class="form-group">
+                    <label for="registerName">Ism</label>
+                    <input type="text" id="registerName" class="form-control" placeholder="Ismingiz">
+                </div>
+                <div class="form-group">
+                    <label for="registerEmail">Email</label>
+                    <input type="email" id="registerEmail" class="form-control" placeholder="email@example.com">
+                </div>
+                <div class="form-group">
+                    <label for="registerPassword">Parol</label>
+                    <input type="password" id="registerPassword" class="form-control" placeholder="Parol (kamida 6 belgi)">
+                </div>
+                <div class="form-group">
+                    <label for="registerRole">Rol</label>
+                    <select id="registerRole" class="form-control">
+                        <option value="student">O'quvchi</option>
+                        <option value="teacher">O'qituvchi</option>
+                    </select>
+                </div>
+                <button class="btn" id="registerBtn">Ro'yxatdan o'tish</button>
+                <div class="auth-switch">
+                    Allaqachon hisobingiz bormi? <a id="showLogin">Kirish</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Asosiy ilova bo'limi -->
+        <div class="app-section" id="appSection">
+            <header>
+                <div class="logo">
+                    <i class="fas fa-users"></i>
+                    <div>
+                        <h1>Firebase Davomat Tizimi</h1>
+                        <div class="subtitle" id="appSubtitle">Professional davomat monitoring tizimi</div>
+                    </div>
+                </div>
+                <div class="date-display" id="currentDate"></div>
+            </header>
+
+            <div class="user-info">
+                <div class="user-details">
+                    <div class="user-avatar" id="userAvatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div>
+                        <div class="user-name" id="userName"></div>
+                        <div class="user-role" id="userRole"></div>
+                    </div>
+                </div>
+                <button class="logout-btn" id="logoutBtn">
+                    <i class="fas fa-sign-out-alt"></i> Chiqish
+                </button>
+            </div>
+
+            <div class="month-selector">
+                <div class="month-nav">
+                    <button class="month-btn" id="prevMonthBtn">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                </div>
+                
+                <div class="month-display">
+                    <span id="currentMonth">Dekabr</span>
+                    <div class="year-display" id="currentYear">2023</div>
+                </div>
+                
+                <div class="month-nav">
+                    <button class="month-btn" id="nextMonthBtn">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="main-content">
+                <div class="status-card" id="statusCard">
+                    <h2 class="status-title">
+                        <i class="fas fa-calendar-check"></i>
+                        <span id="dynamicStatusTitle">Bugungi holatim</span>
+                        <span class="current-profile" id="currentProfileBadge">Men</span>
+                    </h2>
+                    <p id="statusMessage">Bugun, <span id="todayDate">1-dekabr</span> kuni davomat holatingizni belgilang:</p>
+                    
+                    <div class="status-options">
+                        <button class="status-btn present-btn" id="presentBtn">
+                            <i class="fas fa-check-circle"></i> Bor (YES)
+                        </button>
+                        <button class="status-btn absent-btn" id="absentBtn">
+                            <i class="fas fa-times-circle"></i> Yo'q (NO)
+                        </button>
+                    </div>
+                    
+                    <div class="late-option">
+                        <label class="late-checkbox">
+                            <input type="checkbox" id="lateCheckbox">
+                            <i class="fas fa-clock"></i>
+                            <span>Kechikdim (Kechga qoldim)</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="calendar-section">
+                    <h2 class="calendar-title">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span id="calendarMonth">Dekabr</span> oyi davomati
+                    </h2>
+                    <div class="calendar" id="calendar"></div>
+                    
+                    <div class="monthly-stats">
+                        <div class="monthly-stats-title">
+                            <i class="fas fa-chart-pie"></i>
+                            <span id="statsMonth">Dekabr</span> oyi statistikasi:
+                        </div>
+                        <div class="statistics" id="monthlyStats">
+                            <div class="stat-box">
+                                <div class="stat-value" id="presentDays">0</div>
+                                <div class="stat-label">Bor kunlar</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-value" id="absentDays">0</div>
+                                <div class="stat-label">Yo'q kunlar</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="stat-value" id="lateDays">0</div>
+                                <div class="stat-label">Kech qolgan</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Yuklash indikatori -->
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <p>Yuklanmoqda...</p>
+    </div>
+
+    <!-- Xabarnoma -->
+    <div class="notification" id="notification"></div>
+
+    <!-- Font Awesome -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+
+    <script>
+        // ================= FIREBASE KONFIGURATSIYASI =================
+        // BU QISMNI O'ZGARTIRISHINGIZ KERAK!
+        // Firebase konsoliga o'ting -> Project settings -> Your apps -> Firebase SDK snippet -> Config
+const firebaseConfig = {
+    // BU QISMNI SIZ OLGAN KONFIGURATSIYA BILAN ALMASHTIRING
+    apiKey: "AIzaSyAbCdEfGhIjKlMnOpQrStUvWxYzAbCdEfG",
+    authDomain: "attendance-system-abc123.firebaseapp.com",
+    databaseURL: "https://attendance-system-abc123-default-rtdb.firebaseio.com",
+    projectId: "attendance-system-abc123",
+    storageBucket: "attendance-system-abc123.appspot.com",
+    messagingSenderId: "123456789012",
+    appId: "1:123456789012:web:abcdef1234567890abcdef"
+};
+
+        // Firebase ni ishga tushirish
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const database = firebase.database();
+
+        // ================= GLOBAL O'ZGARUVCHILAR =================
+        let currentUser = null;
+        let currentUserData = null;
+        let currentMonth = new Date().getMonth();
+        let currentYear = new Date().getFullYear();
+        const today = new Date().getDate();
+
+        // Oylar nomlari
+        const monthNames = [
+            "Yanvar", "Fevral", "Mart", "Aprel", "May", "Iyun",
+            "Iyul", "Avgust", "Sentabr", "Oktabr", "Noyabr", "Dekabr"
+        ];
+
+        // Hafta kunlari qisqartmalari
+        const dayNames = ['Ya', 'Du', 'Se', 'Ch', 'Pa', 'Ju', 'Sh'];
+
+        // ================= DOM ELEMENTLARI =================
+        const authSection = document.getElementById('authSection');
+        const appSection = document.getElementById('appSection');
+        const loginForm = document.getElementById('loginForm');
+        const registerForm = document.getElementById('registerForm');
+        const showRegister = document.getElementById('showRegister');
+        const showLogin = document.getElementById('showLogin');
+        const loginBtn = document.getElementById('loginBtn');
+        const registerBtn = document.getElementById('registerBtn');
+        const loading = document.getElementById('loading');
+        const notification = document.getElementById('notification');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const userName = document.getElementById('userName');
+        const userRole = document.getElementById('userRole');
+        const userAvatar = document.getElementById('userAvatar');
+        const currentDateElement = document.getElementById('currentDate');
+        const currentMonthElement = document.getElementById('currentMonth');
+        const currentYearElement = document.getElementById('currentYear');
+        const calendarMonthElement = document.getElementById('calendarMonth');
+        const todayDateElement = document.getElementById('todayDate');
+        const dynamicStatusTitle = document.getElementById('dynamicStatusTitle');
+        const currentProfileBadge = document.getElementById('currentProfileBadge');
+        const presentBtn = document.getElementById('presentBtn');
+        const absentBtn = document.getElementById('absentBtn');
+        const lateCheckbox = document.getElementById('lateCheckbox');
+        const calendarElement = document.getElementById('calendar');
+        const presentDaysElement = document.getElementById('presentDays');
+        const absentDaysElement = document.getElementById('absentDays');
+        const lateDaysElement = document.getElementById('lateDays');
+        const statusMessage = document.getElementById('statusMessage');
+        const prevMonthBtn = document.getElementById('prevMonthBtn');
+        const nextMonthBtn = document.getElementById('nextMonthBtn');
+        const statsMonthElement = document.getElementById('statsMonth');
+
+        // ================= FUNKSIYALAR =================
+
+        // 1. YUKLASH KO'RSATKICHI
+        function showLoading() {
+            loading.classList.add('active');
+        }
+
+        function hideLoading() {
+            loading.classList.remove('active');
+        }
+
+        // 2. XABARNOMA
+        function showNotification(message, type = 'info') {
+            notification.textContent = message;
+            notification.className = 'notification';
+            notification.classList.add(type, 'show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // 3. KIRISH FUNKSIYASI (FIREBASE)
+        async function login(email, password) {
+            showLoading();
+            try {
+                const userCredential = await auth.signInWithEmailAndPassword(email, password);
+                currentUser = userCredential.user;
+                await loadUserData(currentUser.uid);
+                showApp();
+                showNotification('Muvaffaqiyatli kirish!', 'success');
+            } catch (error) {
+                showNotification(error.message, 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // 4. RO'YXATDAN O'TISH (FIREBASE)
+        async function register(name, email, password, role) {
+            showLoading();
+            try {
+                const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+                const user = userCredential.user;
+                
+                // Foydalanuvchi ma'lumotlarini Firebase Database ga saqlash
+                await database.ref('users/' + user.uid).set({
+                    name: name,
+                    email: email,
+                    role: role,
+                    createdAt: new Date().toISOString()
+                });
+                
+                currentUser = user;
+                currentUserData = { name, email, role };
+                showApp();
+                showNotification('Muvaffaqiyatli ro\'yxatdan o\'tish!', 'success');
+            } catch (error) {
+                showNotification(error.message, 'error');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // 5. FOYDALANUVCHI MA'LUMOTLARINI YUKLASH
+        async function loadUserData(userId) {
+            try {
+                const userRef = database.ref('users/' + userId);
+                const snapshot = await userRef.once('value');
+                currentUserData = snapshot.val();
+                updateUserInfo();
+            } catch (error) {
+                console.error('Foydalanuvchi ma\'lumotlarini yuklash xatosi:', error);
+            }
+        }
+
+        // 6. FOYDALANUVCHI MA'LUMOTLARINI YANGILASH
+        function updateUserInfo() {
+            if (currentUserData) {
+                userName.textContent = currentUserData.name;
+                userRole.textContent = currentUserData.role === 'teacher' ? 'O\'qituvchi' : 'O\'quvchi';
+                
+                // Avatar rangini o'zgartirish
+                userAvatar.style.backgroundColor = currentUserData.role === 'teacher' ? '#f72585' : '#4361ee';
+                
+                // Subtitleni yangilash
+                const subtitle = document.getElementById('appSubtitle');
+                if (currentUserData.role === 'teacher') {
+                    subtitle.textContent = 'O\'qituvchi paneli';
+                } else {
+                    subtitle.textContent = 'Shaxsiy davomat paneli';
+                }
+            }
+        }
+
+        // 7. SANANI YANGILASH
+        function updateDateDisplay() {
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            const dateString = new Date().toLocaleDateString('uz-UZ', options);
+            currentDateElement.textContent = dateString;
+            
+            // Bugungi sana matni
+            const todayMonth = monthNames[new Date().getMonth()];
+            todayDateElement.textContent = `${new Date().getDate()}-${todayMonth.toLowerCase()}`;
+        }
+
+        // 8. OY KO'RSATKICHI
+        function updateMonthDisplay() {
+            currentMonthElement.textContent = monthNames[currentMonth];
+            currentYearElement.textContent = currentYear;
+            calendarMonthElement.textContent = monthNames[currentMonth];
+            statsMonthElement.textContent = monthNames[currentMonth];
+            
+            // Agar joriy oy ko'rsatilayotgan bo'lsa
+            if (currentMonth === new Date().getMonth() && currentYear === new Date().getFullYear()) {
+                dynamicStatusTitle.textContent = "Bugungi holatim";
+                currentProfileBadge.textContent = currentUserData?.name || "Men";
+            } else {
+                dynamicStatusTitle.textContent = `${monthNames[currentMonth]} oyi holati`;
+                currentProfileBadge.textContent = currentUserData?.name || "Men";
+            }
+        }
+
+        // 9. DAVOMATNI SAQLASH (FIREBASE DATABASE)
+        async function saveAttendance(date, status, late, month, year) {
+            try {
+                const userId = auth.currentUser.uid;
+                const dateKey = `${date}-${month}-${year}`;
+                const attendanceRef = database.ref('attendance/' + userId + '/' + dateKey);
+                
+                await attendanceRef.set({
+                    status: status,
+                    late: late,
+                    month: month,
+                    year: year,
+                    date: dateKey,
+                    updatedAt: new Date().toISOString()
+                });
+                
+                showNotification('Davomat saqlandi!', 'success');
+                return true;
+            } catch (error) {
+                showNotification(error.message, 'error');
+                return false;
+            }
+        }
+
+        // 10. DAVOMATNI YUKLASH (FIREBASE DATABASE)
+        async function loadAttendance(month, year) {
+            try {
+                const userId = auth.currentUser.uid;
+                const attendanceRef = database.ref('attendance/' + userId);
+                const snapshot = await attendanceRef.once('value');
+                const data = snapshot.val();
+                
+                // Ma'lumotlarni filtrlash
+                const filteredData = [];
+                if (data) {
+                    for (const key in data) {
+                        if (data[key].month === month && data[key].year === year) {
+                            filteredData.push({
+                                date: data[key].date,
+                                status: data[key].status,
+                                late: data[key].late
+                            });
+                        }
+                    }
+                }
+                
+                return filteredData;
+            } catch (error) {
+                console.error('Davomat yuklash xatosi:', error);
+                return [];
+            }
+        }
+
+        // 11. KALENDAR YARATISH
+        async function generateCalendar() {
+            // Kalendarni tozalash
+            calendarElement.innerHTML = '';
+            
+            // Hafta kunlari sarlavhalari
+            dayNames.forEach(day => {
+                const dayElement = document.createElement('div');
+                dayElement.className = 'day-header';
+                dayElement.textContent = day;
+                calendarElement.appendChild(dayElement);
+            });
+            
+            // Oyning birinchi kuni va kunlar soni
+            const firstDayOfMonth = new Date(currentYear, currentMonth, 1).getDay();
+            const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+            
+            // Bo'sh kataklar
+            for (let i = 0; i < firstDayOfMonth; i++) {
+                const emptyDay = document.createElement('div');
+                emptyDay.className = 'day empty';
+                calendarElement.appendChild(emptyDay);
+            }
+            
+            // Davomat ma'lumotlarini yuklash
+            const attendanceData = await loadAttendance(currentMonth + 1, currentYear);
+            
+            // Har bir kun uchun element yaratish
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dayElement = document.createElement('div');
+                dayElement.className = 'day';
+                dayElement.dataset.day = day;
+                
+                // Bugungi kunni belgilash
+                if (day === today && currentMonth === new Date().getMonth() && currentYear === new Date().getFullYear()) {
+                    dayElement.classList.add('today');
+                }
+                
+                // Kelajakdagi kunlar uchun cheklov
+                const isFutureDate = (
+                    currentYear > new Date().getFullYear() ||
+                    (currentYear === new Date().getFullYear() && currentMonth > new Date().getMonth()) ||
+                    (currentYear === new Date().getFullYear() && currentMonth === new Date().getMonth() && day > today)
+                );
+                
+                if (isFutureDate) {
+                    dayElement.classList.add('future');
+                }
+                
+                // Kun raqami
+                const dayNumber = document.createElement('div');
+                dayNumber.className = 'day-number';
+                dayNumber.textContent = day;
+                dayElement.appendChild(dayNumber);
+                
+                // Davomat holatini tekshirish
+                const dateKey = `${day}-${currentMonth + 1}-${currentYear}`;
+                const attendanceForDay = attendanceData.find(item => item.date === dateKey);
+                
+                const dayStatus = document.createElement('div');
+                dayStatus.className = 'day-status';
+                
+                if (attendanceForDay) {
+                    dayStatus.textContent = attendanceForDay.status === 'present' ? 'Bor' : 'Yo\'q';
+                    
+                    // Rang berish
+                    if (attendanceForDay.status === 'present') {
+                        dayElement.classList.add('present');
+                    } else {
+                        dayElement.classList.add('absent');
+                    }
+                    
+                    // Kechikish belgisi
+                    if (attendanceForDay.late) {
+                        dayElement.classList.add('late');
+                    }
+                } else if (!isFutureDate) {
+                    dayStatus.textContent = 'Belgilanmagan';
+                }
+                
+                dayElement.appendChild(dayStatus);
+                
+                // Kunni bosganda davomatni yangilash
+                if (!isFutureDate) {
+                    dayElement.style.cursor = 'pointer';
+                    dayElement.addEventListener('click', () => updateDayAttendance(day));
+                } else {
+                    dayElement.style.cursor = 'not-allowed';
+                }
+                
+                calendarElement.appendChild(dayElement);
+            }
+        }
+
+        // 12. KUNLIK DAVOMATNI YANGILASH
+        async function updateDayAttendance(day) {
+            const dateKey = `${day}-${currentMonth + 1}-${currentYear}`;
+            
+            // Holatni so'rash
+            const status = confirm(`${day}-${monthNames[currentMonth].toLowerCase()} kunini "Bor" deb belgilamoqchimisiz? "OK" - Bor, "Bekor qilish" - Yo'q`);
+            
+            // Kechikish holatini so'rash
+            const isToday = (day === today && currentMonth === new Date().getMonth() && currentYear === new Date().getFullYear());
+            const late = isToday ? confirm("Kechikdingizmi?") : false;
+            
+            const saved = await saveAttendance(
+                day,
+                status ? 'present' : 'absent',
+                late,
+                currentMonth + 1,
+                currentYear
+            );
+            
+            if (saved) {
+                await generateCalendar();
+                await updateStatistics();
+                
+                if (isToday) {
+                    updateTodayStatus();
+                }
+            }
+        }
+
+        // 13. BUGUNGI HOLATNI YANGILASH
+        async function updateTodayStatus() {
+            const todayKey = `${today}-${new Date().getMonth() + 1}-${new Date().getFullYear()}`;
+            const attendanceData = await loadAttendance(new Date().getMonth() + 1, new Date().getFullYear());
+            const todayAttendance = attendanceData.find(item => item.date === todayKey);
+            
+            if (todayAttendance) {
+                if (todayAttendance.status === 'present') {
+                    statusMessage.innerHTML = `Bugun, <span id="todayDate">${today}-${monthNames[new Date().getMonth()].toLowerCase()}</span> kuni <strong>BOR</strong> deb belgilandingiz.`;
+                    presentBtn.style.opacity = '0.7';
+                    absentBtn.style.opacity = '1';
+                } else {
+                    statusMessage.innerHTML = `Bugun, <span id="todayDate">${today}-${monthNames[new Date().getMonth()].toLowerCase()}</span> kuni <strong>YO'Q</strong> deb belgilandingiz.`;
+                    presentBtn.style.opacity = '1';
+                    absentBtn.style.opacity = '0.7';
+                }
+                
+                lateCheckbox.checked = todayAttendance.late || false;
+            } else {
+                statusMessage.innerHTML = `Bugun, <span id="todayDate">${today}-${monthNames[new Date().getMonth()].toLowerCase()}</span> kuni davomat holatingizni belgilang:`;
+                presentBtn.style.opacity = '1';
+                absentBtn.style.opacity = '1';
+                lateCheckbox.checked = false;
+            }
+        }
+
+        // 14. STATISTIKANI YANGILASH
+        async function updateStatistics() {
+            const attendanceData = await loadAttendance(currentMonth + 1, currentYear);
+            
+            let presentCount = 0;
+            let absentCount = 0;
+            let lateCount = 0;
+            
+            attendanceData.forEach(item => {
+                if (item.status === 'present') {
+                    presentCount++;
+                    if (item.late) {
+                        lateCount++;
+                    }
+                } else {
+                    absentCount++;
+                }
+            });
+            
+            presentDaysElement.textContent = presentCount;
+            absentDaysElement.textContent = absentCount;
+            lateDaysElement.textContent = lateCount;
+        }
+
+        // 15. ILOVANI KO'RSATISH
+        function showApp() {
+            authSection.classList.remove('active');
+            appSection.classList.add('active');
+            
+            updateDateDisplay();
+            updateMonthDisplay();
+            generateCalendar();
+            updateStatistics();
+            updateTodayStatus();
+        }
+
+        // 16. AUTENTIFIKATSIYANI KO'RSATISH
+        function showAuth() {
+            authSection.classList.add('active');
+            appSection.classList.remove('active');
+            showLoginForm();
+        }
+
+        // 17. CHIQISH FUNKSIYASI
+        function logout() {
+            auth.signOut();
+            currentUser = null;
+            currentUserData = null;
+            showAuth();
+            showNotification('Muvaffaqiyatli chiqish!', 'success');
+        }
+
+        // ================= EVENT LISTENER'LAR =================
+
+        // Kirish/Ro'yxatdan o'tish formalari o'rtasida o'tish
+        showRegister.addEventListener('click', () => {
+            loginForm.style.display = 'none';
+            registerForm.style.display = 'block';
+        });
+
+        showLogin.addEventListener('click', () => {
+            registerForm.style.display = 'none';
+            loginForm.style.display = 'block';
+        });
+
+        // Kirish tugmasi
+        loginBtn.addEventListener('click', () => {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            if (!email || !password) {
+                showNotification('Iltimos, barcha maydonlarni to\'ldiring', 'error');
+                return;
+            }
+            
+            login(email, password);
+        });
+
+        // Ro'yxatdan o'tish tugmasi
+        registerBtn.addEventListener('click', () => {
+            const name = document.getElementById('registerName').value;
+            const email = document.getElementById('registerEmail').value;
+            const password = document.getElementById('registerPassword').value;
+            const role = document.getElementById('registerRole').value;
+            
+            if (!name || !email || !password) {
+                showNotification('Iltimos, barcha maydonlarni to\'ldiring', 'error');
+                return;
+            }
+            
+            if (password.length < 6) {
+                showNotification('Parol kamida 6 belgidan iborat bo\'lishi kerak', 'error');
+                return;
+            }
+            
+            register(name, email, password, role);
+        });
+
+        // Chiqish tugmasi
+        logoutBtn.addEventListener('click', logout);
+
+        // Oy o'zgartirish tugmalari
+        prevMonthBtn.addEventListener('click', () => {
+            currentMonth--;
+            if (currentMonth < 0) {
+                currentMonth = 11;
+                currentYear--;
+            }
+            updateMonthDisplay();
+            generateCalendar();
+            updateStatistics();
+        });
+
+        nextMonthBtn.addEventListener('click', () => {
+            currentMonth++;
+            if (currentMonth > 11) {
+                currentMonth = 0;
+                currentYear++;
+            }
+            updateMonthDisplay();
+            generateCalendar();
+            updateStatistics();
+        });
+
+        // Bugungi holat tugmalari
+        presentBtn.addEventListener('click', async () => {
+            const todayKey = `${today}-${new Date().getMonth() + 1}-${new Date().getFullYear()}`;
+            const saved = await saveAttendance(
+                today,
+                'present',
+                lateCheckbox.checked,
+                new Date().getMonth() + 1,
+                new Date().getFullYear()
+            );
+            
+            if (saved) {
+                updateTodayStatus();
+                generateCalendar();
+                updateStatistics();
+            }
+        });
+
+        absentBtn.addEventListener('click', async () => {
+            const todayKey = `${today}-${new Date().getMonth() + 1}-${new Date().getFullYear()}`;
+            const saved = await saveAttendance(
+                today,
+                'absent',
+                false,
+                new Date().getMonth() + 1,
+                new Date().getFullYear()
+            );
+            
+            if (saved) {
+                updateTodayStatus();
+                generateCalendar();
+                updateStatistics();
+            }
+        });
+
+        // Kechikish checkbox'ini o'zgartirganda
+        lateCheckbox.addEventListener('change', async () => {
+            const todayKey = `${today}-${new Date().getMonth() + 1}-${new Date().getFullYear()}`;
+            const attendanceData = await loadAttendance(new Date().getMonth() + 1, new Date().getFullYear());
+            const todayAttendance = attendanceData.find(item => item.date === todayKey);
+            
+            if (todayAttendance) {
+                const saved = await saveAttendance(
+                    today,
+                    todayAttendance.status,
+                    lateCheckbox.checked,
+                    new Date().getMonth() + 1,
+                    new Date().getFullYear()
+                );
+                
+                if (saved) {
+                    generateCalendar();
+                    updateStatistics();
+                }
+            }
+        });
+
+        // Formlarda Enter tugmasi
+        document.getElementById('loginPassword').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                loginBtn.click();
+            }
+        });
+
+        document.getElementById('registerPassword').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                registerBtn.click();
+            }
+        });
+
+        // ================= FIREBASE AUTH KUZATISH =================
+        // Foydalanuvchi holatini kuzatish
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                currentUser = user;
+                loadUserData(user.uid);
+                showApp();
+            } else {
+                showAuth();
+            }
+        });
+
+        // ================= DASTURNI ISHGA TUSHIRISH =================
+        document.addEventListener('DOMContentLoaded', function() {
+            updateDateDisplay();
+            // Firebase auth holatini avtomatik tekshiradi
+        });
+    </script>
+</body>
+</html>
